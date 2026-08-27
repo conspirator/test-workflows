@@ -1,0 +1,62 @@
+name: Build and Test
+
+# A stand-in for the real CI workflow of ml-explore/mlx-swift-lm, for use in
+# this scratch repository only. It builds nothing.
+#
+# The name, the two job names, and the three step names are the contract the
+# label classifier reads. They must match the real workflow exactly:
+#
+#   name              Build and Test        matched by ci-state.yml
+#   job               lint                  read by ci-state.js
+#   job               mac_build_and_test    the substantive job
+#   step  "Infra: fake check"               the build-machine step
+#   step  "Build (Xcode, macOS)"            a step the author owns
+#
+# mac_build_and_test declares `needs: lint` because the real workflow does. A
+# lint failure therefore skips it rather than failing it, which is the shape
+# the classifier expects.
+#
+# Each job passes or fails according to ci-fake/outcomes.env.
+
+on: pull_request
+
+permissions:
+  contents: read
+
+jobs:
+  lint:
+    runs-on: ubuntu-22.04
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v6
+
+      - name: Run style checks
+        shell: bash
+        run: |
+          . ./ci-fake/outcomes.env
+          echo "LINT=$LINT"
+          test "$LINT" = pass
+
+  mac_build_and_test:
+    needs: lint
+    runs-on: ubuntu-22.04
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v6
+
+      # Named with the prefix on purpose. A failure here reports the build
+      # machine, so the classifier must ask for another run rather than ask
+      # the author for a change.
+      - name: "Infra: fake check"
+        shell: bash
+        run: |
+          . ./ci-fake/outcomes.env
+          echo "INFRA=$INFRA"
+          test "$INFRA" = pass
+
+      - name: Build (Xcode, macOS)
+        shell: bash
+        run: |
+          . ./ci-fake/outcomes.env
+          echo "BUILD=$BUILD"
+          test "$BUILD" = pass
