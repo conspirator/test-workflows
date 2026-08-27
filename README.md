@@ -149,3 +149,4 @@ Edit 2c
 Edit 3
 Edit 4
 Edit 5
+Now that I'm a collaborator can I submit with auto checks?
